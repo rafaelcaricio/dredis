@@ -1,8 +1,9 @@
 import json
 
-from lupa._lupa import LuaRuntime
+from lupa import LuaRuntime
 
 from dredis.commands import run_command, simple_string, CommandNotFound
+from dredis.utils import to_str
 
 
 class RedisScriptError(Exception):
@@ -17,7 +18,7 @@ class RedisLua(object):
 
     def call(self, cmd, *args):
         try:
-            result = run_command(self._keyspace, cmd, args)
+            result = run_command(self._keyspace, cmd.encode(), list(map(lambda x: str(x).encode(), args)))
         except CommandNotFound:
             raise RedisScriptError('@user_script: Unknown Redis command called from Lua script')
         except Exception as exc:
@@ -55,7 +56,7 @@ class RedisLua(object):
             return False
         elif result is True:
             return 1
-        elif isinstance(result, simple_string):
+        elif isinstance(result, (bytes, str)):
             table = self._lua_runtime.table()
             table["ok"] = result
             return table
@@ -72,7 +73,7 @@ class LuaRunner(object):
     def run(self, script, keys, argv):
         self._runtime.execute('KEYS = {%s}' % ', '.join(map(json.dumps, keys)))
         self._runtime.execute('ARGV = {%s}' % ', '.join(map(json.dumps, argv)))
-        script_function = self._runtime.eval('function(redis) {} end'.format(script))
+        script_function = self._runtime.eval('function(redis) {} end'.format(to_str(script)))
         result = script_function(self._redis_obj)
         return self._convert_lua_types_to_redis_types(result)
 
@@ -99,9 +100,9 @@ class LuaRunner(object):
                 elif 'ok' in value:
                     return value['ok']
                 else:
-                    return map(convert, value.values())
+                    return list(map(convert, value.values()))
             elif isinstance(value, (tuple, list, set)):
-                return map(convert, value)
+                return list(map(convert, value))
             elif value is True:
                 return 1
             elif value is False:
