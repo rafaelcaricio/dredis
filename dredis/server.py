@@ -124,7 +124,8 @@ def setup_logging(level):
 
 
 def main():
-    parser = argparse.ArgumentParser(version=__version__)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=__version__))
     parser.add_argument('--host', default='127.0.0.1', help='server host (defaults to %(default)s)')
     parser.add_argument('--port', default='6377', type=int, help='server port (defaults to %(default)s)')
     parser.add_argument('--dir', default=None,
