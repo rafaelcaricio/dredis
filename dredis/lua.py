@@ -1,4 +1,5 @@
 import json
+import functools
 
 from lupa import LuaRuntime
 
@@ -71,11 +72,19 @@ class LuaRunner(object):
         self._redis_obj = RedisLua(keyspace, self._runtime)
 
     def run(self, script, keys, argv):
-        self._runtime.execute('KEYS = {%s}' % ', '.join(map(json.dumps, keys)))
-        self._runtime.execute('ARGV = {%s}' % ', '.join(map(json.dumps, argv)))
+        self._runtime.execute('KEYS = {%s}' % self._prepare_params(keys))
+        self._runtime.execute('ARGV = {%s}' % self._prepare_params(argv))
         script_function = self._runtime.eval('function(redis) {} end'.format(to_str(script)))
         result = script_function(self._redis_obj)
         return self._convert_lua_types_to_redis_types(result)
+
+    def _prepare_params(self, value):
+        return ', '.join(map(functools.partial(json.dumps, default=self._convert_str), value))
+
+    def _convert_str(self, value):
+        if isinstance(value, bytes):
+            return to_str(value)
+        return value
 
     def _convert_lua_types_to_redis_types(self, result):
         def convert(value):
