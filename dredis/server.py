@@ -8,6 +8,7 @@ import tempfile
 import traceback
 
 import sys
+from six import string_types
 
 from dredis import __version__
 from dredis.commands import run_command, SimpleString, CommandNotFound
@@ -59,7 +60,7 @@ def transmit(send_fn, result):
             to_send.append(':{}\r\n'.format(elem))
         elif isinstance(elem, SimpleString):
             to_send.append('+{}\r\n'.format(elem))
-        elif isinstance(elem, basestring):
+        elif isinstance(elem, string_types):
             to_send.append('${}\r\n{}\r\n'.format(len(elem), elem))
         elif isinstance(elem, (set, list, tuple)):
             to_send.append('*{}\r\n'.format(len(elem)))
