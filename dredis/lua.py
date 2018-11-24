@@ -2,7 +2,7 @@ import json
 
 from lupa._lupa import LuaRuntime
 
-from dredis.commands import run_command, SimpleString, CommandNotFound
+from dredis.commands import run_command, simple_string, CommandNotFound
 
 
 class RedisScriptError(Exception):
@@ -55,7 +55,7 @@ class RedisLua(object):
             return False
         elif result is True:
             return 1
-        elif isinstance(result, SimpleString):
+        elif isinstance(result, simple_string):
             table = self._lua_runtime.table()
             table["ok"] = result
             return table

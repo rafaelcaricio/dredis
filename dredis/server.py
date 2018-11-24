@@ -11,7 +11,7 @@ import sys
 from six import string_types
 
 from dredis import __version__
-from dredis.commands import run_command, SimpleString, CommandNotFound
+from dredis.commands import run_command, simple_string, CommandNotFound
 from dredis.keyspace import DiskKeyspace
 from dredis.lua import RedisScriptError
 from dredis.parser import Parser
@@ -24,28 +24,28 @@ ROOT_DIR = None  # defined by `main()`
 
 
 def not_found(send_fn, cmd):
-    err(send_fn, "unknown command '{}'".format(cmd))
+    err(send_fn, b"unknown command '%s'" % cmd)
 
 
 def err(send_fn, msg):
-    send_fn("-ERR {}\r\n".format(msg))
+    send_fn(b"-ERR %s\r\n" % msg)
 
 
 def error(send_fn, msg):
-    send_fn('-{}\r\n'.format(msg))
+    send_fn(b'-%s\r\n' % msg)
 
 
 def execute_cmd(keyspace, send_fn, cmd, *args):
     try:
         result = run_command(keyspace, cmd, args)
     except (ValueError, RedisScriptError) as exc:
-        error(send_fn, str(exc))
+        error(send_fn, str(exc).encode())
     except CommandNotFound:
         not_found(send_fn, cmd)
     except SyntaxError as exc:
-        err(send_fn, str(exc))
+        err(send_fn, str(exc).encode())
     except Exception:
-        err(send_fn, json.dumps(traceback.format_exc()))
+        err(send_fn, json.dumps(traceback.format_exc()).encode())
     else:
         transmit(send_fn, result)
 
@@ -55,22 +55,22 @@ def transmit(send_fn, result):
 
     def _transform(elem):
         if elem is None:
-            to_send.append('$-1\r\n')
+            to_send.append(b'$-1\r\n')
         elif isinstance(elem, int):
-            to_send.append(':{}\r\n'.format(elem))
-        elif isinstance(elem, SimpleString):
-            to_send.append('+{}\r\n'.format(elem))
-        elif isinstance(elem, string_types):
-            to_send.append('${}\r\n{}\r\n'.format(len(elem), elem))
+            to_send.append(b':%d\r\n' % elem)
+        elif isinstance(elem, str):
+            to_send.append(b'+%s\r\n' % elem.encode())
+        elif isinstance(elem, bytes):
+            to_send.append(b'$%d\r\n%s\r\n' % (len(elem), elem))
         elif isinstance(elem, (set, list, tuple)):
-            to_send.append('*{}\r\n'.format(len(elem)))
+            to_send.append(b'*%d\r\n' % len(elem))
             for element in elem:
                 _transform(element)
         else:
             assert False, 'couldnt catch a response for {} (type {})'.format(repr(result), type(result))
 
     _transform(result)
-    send_fn(''.join(to_send))
+    send_fn(b''.join(to_send))
 
 
 class CommandHandler(asyncore.dispatcher):
@@ -81,7 +81,7 @@ class CommandHandler(asyncore.dispatcher):
             logger.debug('{} data = {}'.format(self.addr, repr(cmd)))
             execute_cmd(self.keyspace, self.debug_send, *cmd)
 
-    def debug_send(self, *args):
+    def debug_send(self, *args: bytes):
         logger.debug("out={}".format(repr(args)))
         return self.send(*args)
 

@@ -25,14 +25,14 @@ def test_set_and_get_bytes():
     r = fresh_redis()
 
     assert r.set('foo', b'\x05\x02\x03') is True
-    assert r.get('foo') == b'\x05\x02\x03'
+    assert r.get('foo') == '\x05\x02\x03'
 
 
 def test_set_and_get_unicode_chars():
     r = fresh_redis()
 
-    assert r.set(u'foo㐀㐁', u'㐂㐃') is True
-    assert r.get(u'foo㐀㐁') == u'㐂㐃'.encode('utf-8')  # there's unicode conversion in Redis
+    assert r.set('foo㐀㐁', '㐂㐃') is True
+    assert r.get('foo㐀㐁') == '㐂㐃'
 
 
 def test_set_and_get_integer():
@@ -81,4 +81,4 @@ def test_get_arity():
 
     with pytest.raises(redis.ResponseError) as exc:
         r.execute_command('GET')
-    assert exc.value.message == "wrong number of arguments for 'get' command"
+    assert str(exc.value) == "wrong number of arguments for 'get' command"

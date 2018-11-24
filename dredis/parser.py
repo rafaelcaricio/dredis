@@ -1,14 +1,14 @@
 class Parser(object):
 
     MAX_BUFSIZE = 1024 * 1024
-    CRLF = '\r\n'
+    CRLF = b'\r\n'
 
     def __init__(self, read_fn):
-        self._buffer = ""
+        self._buffer = b""
         self._read_fn = read_fn
 
     def _readline(self):
-        if '\n' not in self._buffer:
+        if b'\n' not in self._buffer:
             self._read_into_buffer()
         crlf_position = self._buffer.find(self.CRLF)
         result = self._buffer[:crlf_position]
@@ -39,10 +39,10 @@ class Parser(object):
 
             # the Redis protocol says that all commands are arrays, however,
             # Redis's own tests have commands like PING being sent as a Simple String
-            if instructions.startswith('+'):
+            if instructions.startswith(b'+'):
                 yield instructions[1:].strip().split()
             # if instructions.startswith('*'):
-            elif instructions.startswith('*'):
+            elif instructions.startswith(b'*'):
                 # array of instructions
                 array_length = int(instructions[1:])  # skip '*' char
                 instruction_set = []
@@ -53,5 +53,5 @@ class Parser(object):
                 yield instruction_set
             else:
                 # inline instructions, saw them in the Redis tests
-                for line in instructions.split('\r\n'):
+                for line in instructions.split(b'\r\n'):
                     yield line.strip().split()

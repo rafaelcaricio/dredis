@@ -1,7 +1,7 @@
 import logging
 from functools import wraps
 
-from dredis.utils import to_float
+from dredis.utils import to_float, to_str
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +39,8 @@ def command(cmd_name, arity):
     return decorator
 
 
-class SimpleString(str):
-    pass
+def simple_string(text):
+    return text.encode()
 
 
 """
@@ -62,14 +62,14 @@ def cmd_command(keyspace):
 def cmd_flushall(keyspace, *args):
     # TODO: we don't support ASYNC flushes
     keyspace.flushall()
-    return SimpleString('OK')
+    return simple_string('OK')
 
 
 @command('FLUSHDB', arity=-1)
 def cmd_flushdb(keyspace, *args):
     # TODO: we don't support ASYNC flushes
     keyspace.flushdb()
-    return SimpleString('OK')
+    return simple_string('OK')
 
 
 @command('DBSIZE', arity=1)
@@ -112,14 +112,14 @@ def cmd_exists(keyspace, *keys):
 
 
 @command('PING', arity=-1)
-def cmd_ping(keyspace, message=SimpleString('PONG')):
+def cmd_ping(keyspace, message=simple_string('PONG')):
     return message
 
 
 @command('SELECT', arity=2)
 def cmd_select(keyspace, db):
     keyspace.select(db)
-    return SimpleString('OK')
+    return simple_string('OK')
 
 
 """
@@ -134,7 +134,7 @@ def cmd_set(keyspace, key, value, *args):
     if len(args):
         raise SyntaxError('No support for EX|PX and NX|XX at the moment.')
     keyspace.set(key, value)
-    return SimpleString('OK')
+    return simple_string('OK')
 
 
 @command('GET', arity=2)
@@ -226,7 +226,7 @@ def cmd_zadd(keyspace, key, *flat_pairs):
 def cmd_zrange(keyspace, key, start, stop, *args):
     with_scores = False
     if args:
-        if args[0].lower() == 'withscores':
+        if args[0].lower() == b'withscores':
             with_scores = True
         else:
             raise SYNTAXERR
@@ -266,9 +266,9 @@ def cmd_zrangebyscore(keyspace, key, min_score, max_score, *args):
     args = list(args)
     while args:
         arg = args.pop(0)
-        if len(args) >= 0 and arg.lower() == 'withscores':
+        if len(args) >= 0 and arg.lower() == b'withscores':
             withscores = True
-        elif len(args) >= 2 and arg.lower() == 'limit':
+        elif len(args) >= 2 and arg.lower() == b'limit':
             offset = int(args.pop(0))
             count = int(args.pop(0))
         else:
@@ -283,7 +283,7 @@ def cmd_zrangebyscore(keyspace, key, min_score, max_score, *args):
 
 
 def _validate_zset_score(score):
-    clean_score = score.strip('(').lower().replace('nan', 'invalid')
+    clean_score = score.strip(b'(').lower().replace(b'nan', b'invalid')
     try:
         to_float(clean_score)
     except ValueError:
@@ -297,8 +297,8 @@ def cmd_zunionstore(keyspace, destination, numkeys, *args):
     args = list(args)
     while args:
         arg = args.pop(0)
-        if arg == 'WEIGHTS':
-            weights = map(float, args)
+        if arg == b'WEIGHTS':
+            weights = list(map(float, args))
             break
         else:
             keys.append(arg)
@@ -375,8 +375,8 @@ class CommandNotFound(Exception):
 def run_command(keyspace, cmd, args):
     logger.debug('[run_command] cmd={}, args={}'.format(repr(cmd), repr(args)))
 
-    str_args = map(str, args)
-    if cmd.upper() not in REDIS_COMMANDS:
+    str_cmd = to_str(cmd).upper()
+    if str_cmd not in REDIS_COMMANDS:
         raise CommandNotFound()
     else:
-        return REDIS_COMMANDS[cmd.upper()](keyspace, *str_args)
+        return REDIS_COMMANDS[str_cmd](keyspace, *args)

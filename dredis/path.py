@@ -7,6 +7,7 @@ import struct
 import six
 import six.moves as sm
 import sys
+from dredis.utils import to_str
 
 from scandir import scandir
 
@@ -14,7 +15,7 @@ from scandir import scandir
 class Path(str):
 
     def join(self, path):
-        return Path(os.path.join(self, path))
+        return Path(os.path.join(self, to_str(path)))
 
     def reset(self):
         shutil.rmtree(self, ignore_errors=True)
@@ -69,7 +70,7 @@ class Path(str):
         if pattern is None:
             return all_files
         else:
-            return list(fnmatch.filter(all_files, pattern))
+            return list(fnmatch.filter(all_files, to_str(pattern)))
 
     def remove_line(self, line_to_remove):
         lines = self.readlines()

@@ -8,33 +8,33 @@ def test_zset_zadd_and_zcard():
     r = fresh_redis()
     assert r.zcard('myzset') == 0
 
-    assert r.zadd('myzset', 0, 'myvalue1') == 1
+    assert r.zadd('myzset', {'myvalue1': 0}) == 1
     assert r.zcard('myzset') == 1
 
-    assert r.zadd('myzset', 1, 'myvalue2') == 1
+    assert r.zadd('myzset', {'myvalue2': 1}) == 1
     assert r.zcard('myzset') == 2
 
-    assert r.zadd('myzset', 0, 'myvalue1') == 0  # not changed
+    assert r.zadd('myzset', {'myvalue1': 0}) == 0  # not changed
 
 
 def test_zadd_with_multiple_parameters():
     r = fresh_redis()
-    assert r.zadd('myzset', 0, 'myvalue1', 1, 'myvalue2', 2, 'myvalue3') == 3
+    assert r.zadd('myzset', {'myvalue1': 0, 'myvalue2': 1, 'myvalue3': 2}) == 3
     assert r.zcard('myzset') == 3
 
 
 def test_zset_zrange_with_positive_integers():
     r = fresh_redis()
-    r.zadd('myzset', 0, 'myvalue1')
-    r.zadd('myzset', 1, 'myvalue2')
+    r.zadd('myzset', {'myvalue1': 0})
+    r.zadd('myzset', {'myvalue2': 1})
     assert r.zrange('myzset', 0, 1) == ['myvalue1', 'myvalue2']
     assert r.zrange('myzset', 0, 100) == ['myvalue1', 'myvalue2']
 
 
 def test_zset_zrange_with_negative_numbers():
     r = fresh_redis()
-    r.zadd('myzset', 0, 'myvalue1')
-    r.zadd('myzset', 1, 'myvalue2')
+    r.zadd('myzset', {'myvalue1': 0})
+    r.zadd('myzset', {'myvalue2': 1})
     assert r.zrange('myzset', 0, -1) == ['myvalue1', 'myvalue2']
     assert r.zrange('myzset', 0, -2) == ['myvalue1']
     assert r.zrange('myzset', 0, -3) == []
@@ -48,10 +48,10 @@ def test_redis_official_zset_tests_for_zrange():
 
     r = fresh_redis()
     r.flushall()
-    r.zadd('ztmp', 1, 'a')
-    r.zadd('ztmp', 2, 'b')
-    r.zadd('ztmp', 3, 'c')
-    r.zadd('ztmp', 4, 'd')
+    r.zadd('ztmp', {'a': 1})
+    r.zadd('ztmp', {'b': 2})
+    r.zadd('ztmp', {'c': 3})
+    r.zadd('ztmp', {'d': 4})
 
     assert r.zrange('ztmp', 0, -1) == ['a', 'b', 'c', 'd']
     assert r.zrange('ztmp', 0, -2) == ['a', 'b', 'c']
@@ -78,16 +78,16 @@ def test_redis_official_zset_tests_for_zrange():
 
 def test_zset_zrange_with_scores():
     r = fresh_redis()
-    r.zadd('myzset', 0, 'myvalue1')
-    r.zadd('myzset', 1, 'myvalue2')
+    r.zadd('myzset', {'myvalue1': 0})
+    r.zadd('myzset', {'myvalue2': 1})
     assert r.zrange('myzset', 0, 1, withscores=True) == [('myvalue1', 0), ('myvalue2', 1)]
 
 
 def test_zset_with_rescoring():
     r = fresh_redis()
-    assert r.zadd('myzset', 0, 'myvalue1') == 1
-    assert r.zadd('myzset', 1, 'myvalue2') == 1
-    assert r.zadd('myzset', 0, 'myvalue2') == 0  # now the score 0 has "myvalue1" & "myvalue2"
+    assert r.zadd('myzset', {'myvalue1': 0}) == 1
+    assert r.zadd('myzset', {'myvalue2': 1}) == 1
+    assert r.zadd('myzset', {'myvalue2': 0}) == 0  # now the score 0 has "myvalue1" & "myvalue2"
     assert r.zcard('myzset') == 2
     assert r.zrange('myzset', 0, -1, withscores=True) == [('myvalue1', 0), ('myvalue2', 0)]
 
@@ -95,10 +95,10 @@ def test_zset_with_rescoring():
 def test_zrem():
     r = fresh_redis()
 
-    r.zadd('myzset', 0, 'myvalue0')
-    r.zadd('myzset', 0, 'myvalue1')
-    r.zadd('myzset', 1, 'myvalue2')
-    r.zadd('myzset', 0, 'myvalue3')
+    r.zadd('myzset', {'myvalue0': 0})
+    r.zadd('myzset', {'myvalue1': 0})
+    r.zadd('myzset', {'myvalue2': 1})
+    r.zadd('myzset', {'myvalue3': 0})
 
     assert r.zrem('myzset', 'myvalue1') == 1
     assert r.zrem('myzset', 'notfound') == 0
@@ -109,8 +109,8 @@ def test_zrem():
 def test_zscore():
     r = fresh_redis()
 
-    r.zadd('myzset', 0, 'myvalue1')
-    r.zadd('myzset', 1, 'myvalue2')
+    r.zadd('myzset', {'myvalue1': 0})
+    r.zadd('myzset', {'myvalue2': 1})
 
     assert r.zscore('myzset', 'myvalue1') == 0
     assert r.zscore('myzset', 'myvalue2') == 1
@@ -120,10 +120,10 @@ def test_zscore():
 def test_zrangebyscore():
     r = fresh_redis()
 
-    r.zadd('myzset', 0, 'myvalue0')
-    r.zadd('myzset', 100, 'myvalue1')
-    r.zadd('myzset', 200, 'myvalue2')
-    r.zadd('myzset', 300, 'myvalue3')
+    r.zadd('myzset', {'myvalue0': 0})
+    r.zadd('myzset', {'myvalue1': 100})
+    r.zadd('myzset', {'myvalue2': 200})
+    r.zadd('myzset', {'myvalue3': 300})
 
     assert r.zrangebyscore('myzset', 100, 200) == ['myvalue1', 'myvalue2']
     assert r.zrangebyscore('myzset', '(100', 200) == ['myvalue2']
@@ -133,10 +133,10 @@ def test_zrangebyscore():
 def test_zrangebyscore_with_scores():
     r = fresh_redis()
 
-    r.zadd('myzset', 0, 'myvalue0')
-    r.zadd('myzset', 100, 'myvalue1')
-    r.zadd('myzset', 200, 'myvalue2')
-    r.zadd('myzset', 300, 'myvalue3')
+    r.zadd('myzset', {'myvalue0': 0})
+    r.zadd('myzset', {'myvalue1': 100})
+    r.zadd('myzset', {'myvalue2': 200})
+    r.zadd('myzset', {'myvalue3': 300})
 
     assert r.zrangebyscore('myzset', 100, 200, withscores=True) == [('myvalue1', 100), ('myvalue2', 200)]
 
@@ -144,10 +144,10 @@ def test_zrangebyscore_with_scores():
 def test_zrangebyscore_with_limit():
     r = fresh_redis()
 
-    r.zadd('myzset', 0, 'myvalue0')
-    r.zadd('myzset', 100, 'myvalue1')
-    r.zadd('myzset', 200, 'myvalue2')
-    r.zadd('myzset', 300, 'myvalue3')
+    r.zadd('myzset', {'myvalue0': 0})
+    r.zadd('myzset', {'myvalue1': 100})
+    r.zadd('myzset', {'myvalue2': 200})
+    r.zadd('myzset', {'myvalue3': 300})
 
     assert r.zrangebyscore('myzset', 0, 400, start=2, num=2, withscores=True) == [('myvalue2', 200), ('myvalue3', 300)]
 
@@ -155,10 +155,10 @@ def test_zrangebyscore_with_limit():
 def test_zrank():
     r = fresh_redis()
 
-    r.zadd('myzset', 0, 'zero')
-    r.zadd('myzset', 100, 'one')
-    r.zadd('myzset', 200, 'two')
-    r.zadd('myzset', 300, 'three')
+    r.zadd('myzset', {'zero': 0})
+    r.zadd('myzset', {'one': 100})
+    r.zadd('myzset', {'two': 200})
+    r.zadd('myzset', {'three': 300})
 
     assert r.zrank('myzset', 'zero') == 0
     assert r.zrank('myzset', 'one') == 1
@@ -170,10 +170,10 @@ def test_zrank():
 def test_zsets_should_support_floats_as_score_and_ranges():
     r = fresh_redis()
 
-    r.zadd('myzset', 0.2, 'zero')
-    r.zadd('myzset', 0.7, 'one')
-    r.zadd('myzset', 1.3, 'two')
-    r.zadd('myzset', 2.5, 'three')
+    r.zadd('myzset', {'zero': 0.2})
+    r.zadd('myzset', {'one': 0.7})
+    r.zadd('myzset', {'two': 1.3})
+    r.zadd('myzset', {'three': 2.5})
 
     assert r.zrangebyscore('myzset', 0, 0.7, withscores=True) == [('zero', 0.2), ('one', 0.7)]
     assert r.zrangebyscore('myzset', '-inf', '+inf', withscores=True) == [
@@ -192,15 +192,15 @@ def test_zsets_should_support_floats_as_score_and_ranges():
 def test_zset_rescore_when_zero_is_decimal_point():
     r = fresh_redis()
 
-    assert r.zadd('myzset', 1.0, 'a') == 1
-    assert r.zadd('myzset', 1, 'a') == 0  # nothing changed
+    assert r.zadd('myzset', {'a': 1.0}) == 1
+    assert r.zadd('myzset', {'a': 1}) == 0  # nothing changed
 
 
 def test_zcount():
     r = fresh_redis()
 
-    r.zadd('myzset', 1, 'a')
-    r.zadd('myzset', 2, 'b')
+    r.zadd('myzset', {'a': 1})
+    r.zadd('myzset', {'b': 2})
 
     assert r.zcount('myzset', 0, 10) == 2
 
@@ -210,14 +210,14 @@ def test_zuinionstore():
     '''ZUNIONSTORE destination numkeys key [key ...] [WEIGHTS weight [weight ...]] [AGGREGATE SUM|MIN|MAX]'''
     r = fresh_redis()
 
-    r.zadd('myzset1', 0, 'myvalue1')
-    r.zadd('myzset1', 1, 'common')
+    r.zadd('myzset1', {'myvalue1': 0})
+    r.zadd('myzset1', {'common': 1})
 
-    r.zadd('myzset2', 2, 'myvalue2')
-    r.zadd('myzset2', 3, 'common')
+    r.zadd('myzset2', {'myvalue2': 2})
+    r.zadd('myzset2', {'common': 3})
 
-    r.zadd('myzset3', 4, 'myvalue3')
-    r.zadd('myzset3', 5, 'common')
+    r.zadd('myzset3', {'myvalue3': 4})
+    r.zadd('myzset3', {'common': 5})
 
     factor1 = 1
     factor2 = 2
@@ -243,7 +243,7 @@ def test_zuinionstore():
 def test_empty_zset_after_zrem_should_be_removed_from_keyspace():
     r = fresh_redis()
 
-    r.zadd('myzset1', 0, 'myvalue1')
+    r.zadd('myzset1', {'myvalue1': 0})
     r.zrem('myzset1', 'myvalue1')
 
     assert r.keys() == []
@@ -254,7 +254,7 @@ def test_zadd_should_only_accept_pairs():
 
     with pytest.raises(redis.ResponseError) as exc:
         r.execute_command('ZADD', 'mykey', 0, 'myvalue1', 1)
-    assert exc.value.message == "syntax error"
+    assert str(exc.value) == "syntax error"
 
 
 def test_zrange_should_only_accept_withscores_as_extra_argument():
@@ -262,7 +262,7 @@ def test_zrange_should_only_accept_withscores_as_extra_argument():
 
     with pytest.raises(redis.ResponseError) as exc:
         r.execute_command('ZRANGE', 'mykey', 0, 1, 'bleh')
-    assert exc.value.message == "syntax error"
+    assert str(exc.value) == "syntax error"
     assert r.execute_command('ZRANGE', 'mykey', 0, 1, 'WITHSCORES') == []
 
 
@@ -271,11 +271,11 @@ def test_zrangebyscore_should_validate_withscores_and_limit_extra_arguments():
 
     with pytest.raises(redis.ResponseError) as exc1:
         r.execute_command('ZRANGEBYSCORE', 'mykey', 0, 1, 'bleh', 'WITHSCORES', 'LIMIT', 0)  # missing count
-    assert exc1.value.message == "syntax error"
+    assert str(exc1.value) == "syntax error"
 
     with pytest.raises(redis.ResponseError) as exc2:
         r.execute_command('ZRANGEBYSCORE', 'mykey', 0, 1, 'bleh', 'extraword')  # unknown parameter
-    assert exc2.value.message == "syntax error"
+    assert str(exc2.value) == "syntax error"
 
 
 def test_zrangebyscore_should_validate_limit_values_as_integers():
@@ -283,11 +283,11 @@ def test_zrangebyscore_should_validate_limit_values_as_integers():
 
     with pytest.raises(redis.ResponseError) as exc1:
         r.execute_command('ZRANGEBYSCORE', 'mykey', 0, 1, 'bleh',  'LIMIT', 0, 's')
-    assert exc1.value.message == "syntax error"
+    assert str(exc1.value) == "syntax error"
 
     with pytest.raises(redis.ResponseError) as exc2:
         r.execute_command('ZRANGEBYSCORE', 'mykey', 0, 1, 'bleh',  'LIMIT', 's', 1)
-    assert exc2.value.message == "syntax error"
+    assert str(exc2.value) == "syntax error"
 
 
 def test_zrangebyscore_with_limit_from_official_redis_tests():
@@ -295,7 +295,7 @@ def test_zrangebyscore_with_limit_from_official_redis_tests():
     # https://github.com/antirez/redis/blob/cb51bb4320d2240001e8fc4a522d59fb28259703/tests/unit/type/zset.tcl#L361-L371
     r = fresh_redis()
 
-    r.zadd('zset', float('-inf'), 'a', 1, 'b', 2, 'c', 3, 'd', 4, 'e', 5, 'f', float('+inf'), 'g')
+    r.zadd('zset', {'a': float('-inf'), 'b': 1, 'c': 1, 'd': 3, 'e': 4, 'f': 5, 'g': float('+inf')})
 
     assert r.zrangebyscore('zset', 0, 10, start=0, num=2) == ['b', 'c']
     assert r.zrangebyscore('zset', 0, 10, start=2, num=3) == ['d', 'e', 'f']
@@ -305,29 +305,29 @@ def test_zrangebyscore_with_limit_from_official_redis_tests():
 
 def test_invalid_floats():
     r = fresh_redis()
-    r.zadd('myzset', 0, 'test')
+    r.zadd('myzset', {'test': 0})
 
     with pytest.raises(redis.ResponseError) as exc1:
         r.zrangebyscore('myzset', 'invalid', 0)
-    assert exc1.value.message == 'min or max is not a float'
+    assert str(exc1.value) == 'min or max is not a float'
 
     with pytest.raises(redis.ResponseError) as exc2:
         r.zrangebyscore('myzset', 0, 'invalid')
-    assert exc2.value.message == 'min or max is not a float'
+    assert str(exc2.value) == 'min or max is not a float'
 
     with pytest.raises(redis.ResponseError) as exc3:
         r.zrangebyscore('myzset', 0, 'NaN')
-    assert exc3.value.message == 'min or max is not a float'
+    assert str(exc3.value) == 'min or max is not a float'
 
     with pytest.raises(redis.ResponseError) as exc4:
         r.zrangebyscore('myzset', 'NaN', 0)
-    assert exc4.value.message == 'min or max is not a float'
+    assert str(exc4.value) == 'min or max is not a float'
 
 
 def test_zadd_with_newlines():
     r = fresh_redis()
-    r.zadd('myzset', 0, 'my\ntest\nstring')
-    r.zadd('myzset', 0, 'my\nsecond\nstring')
+    r.zadd('myzset', {'my\ntest\nstring': 0})
+    r.zadd('myzset', {'my\nsecond\nstring': 0})
 
     assert r.zcard('myzset') == 2
     assert r.zrange('myzset', 0, 1) == ['my\nsecond\nstring', 'my\ntest\nstring']

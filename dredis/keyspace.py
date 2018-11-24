@@ -4,7 +4,7 @@ import re
 
 from dredis.lua import LuaRunner
 from dredis.path import Path
-from dredis.utils import to_float
+from dredis.utils import to_float, to_str
 
 DEFAULT_REDIS_DB = '0'
 NUMBER_OF_REDIS_DATABASES = 15
@@ -19,18 +19,18 @@ class DiskKeyspace(object):
         self._set_db_directory(DEFAULT_REDIS_DB)
 
     def _set_db_directory(self, db):
-        self.directory = self._root_directory.join(db)
+        self.directory = self._root_directory.join(to_str(db))
 
     def _key_path(self, key):
-        return self.directory.join(key)
+        return self.directory.join(to_str(key))
 
     def setup_directories(self):
         for db_id in range(NUMBER_OF_REDIS_DATABASES):
-            self._root_directory.join(str(db_id)).makedirs(ignore_if_exists=True)
+            self._root_directory.join(to_str(db_id)).makedirs(ignore_if_exists=True)
 
     def flushall(self):
         for db_id in range(NUMBER_OF_REDIS_DATABASES):
-            self._root_directory.join(str(db_id)).reset()
+            self._root_directory.join(to_str(db_id)).reset()
 
     def flushdb(self):
         self.directory.reset()
@@ -47,9 +47,9 @@ class DiskKeyspace(object):
             number = int(content)
         else:
             key_path.makedirs()
-            self.write_type(key, 'string')
+            self.write_type(key, b'string')
         result = number + increment
-        value_path.write(str(result))
+        value_path.write(str(result).encode())
         return result
 
     def get(self, key):
@@ -64,7 +64,7 @@ class DiskKeyspace(object):
         key_path = self._key_path(key)
         if not self.exists(key):
             key_path.makedirs()
-            self.write_type(key, 'string')
+            self.write_type(key, b'string')
         key_path.join('value').write(value)
 
     def getrange(self, key, start, end):
@@ -82,7 +82,7 @@ class DiskKeyspace(object):
         values_path = key_path.join('values')
         if not self.exists(key):
             values_path.makedirs()
-            self.write_type(key, 'set')
+            self.write_type(key, b'set')
         fname = self._get_filename_hash(value)
         value_path = values_path.join(fname)
         if value_path.exists():
@@ -136,9 +136,11 @@ class DiskKeyspace(object):
         """
 
         # if `score` has 0 as the decimal point, trim it: 10.00 -> 10
-        match = DECIMAL_REGEX.match(score)
+        str_score = to_str(score)
+        match = DECIMAL_REGEX.match(str_score)
         if match:
-            score = match.group(1)
+            str_score = match.group(1)
+            score = str_score.encode()
 
         key_path = self._key_path(key)
         scores_path = key_path.join('scores')
@@ -146,9 +148,9 @@ class DiskKeyspace(object):
         if not key_path.exists():
             scores_path.makedirs()
             values_path.makedirs()
-            self.write_type(key, 'zset')
+            self.write_type(key, b'zset')
 
-        score_path = scores_path.join(score)
+        score_path = scores_path.join(str_score)
         value_path = values_path.join(self._get_filename_hash(value))
         if value_path.exists():
             result = 0
@@ -349,7 +351,7 @@ class DiskKeyspace(object):
         else:
             result = 1
         field_path.write(value)
-        self.write_type(key, 'hash')
+        self.write_type(key, b'hash')
         return result
 
     def hsetnx(self, key, field, value):
@@ -363,7 +365,7 @@ class DiskKeyspace(object):
         if not field_path.exists():
             result = 1
             field_path.write(value)
-        self.write_type(key, 'hash')
+        self.write_type(key, b'hash')
         return result
 
     def hdel(self, key, *fields):
@@ -421,7 +423,7 @@ class DiskKeyspace(object):
     def hincrby(self, key, field, increment):
         before = self.hget(key, field) or '0'
         new_value = int(before) + int(increment)
-        self.hset(key, field, str(new_value))
+        self.hset(key, field, to_str(new_value).encode())
         return new_value
 
     def hgetall(self, key):
@@ -444,13 +446,13 @@ class ScoreRange(object):
         self._max_value = max_value
 
     def check(self, value):
-        if self._min_value.startswith('('):
+        if self._min_value.startswith(b'('):
             if to_float(self._min_value[1:]) >= value:
                 return False
         elif to_float(self._min_value) > value:
             return False
 
-        if self._max_value.startswith('('):
+        if self._max_value.startswith(b'('):
             if to_float(self._max_value[1:]) <= value:
                 return False
         elif to_float(self._max_value) < value:

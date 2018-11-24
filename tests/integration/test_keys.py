@@ -7,7 +7,7 @@ def test_types():
     r.set('mystr', 'test')
     r.incr('myint')
     r.sadd('myset', 'test')
-    r.zadd('myzset', 0, 'test')
+    r.zadd('myzset', {'test': 0})
     r.hset('myhash1', 'field', 'value')
     r.hsetnx('myhash2', 'field', 'value')
 
@@ -26,7 +26,7 @@ def test_keys():
     r.set('mystr', 'test')
     r.incr('myint')
     r.sadd('myset', 'test')
-    r.zadd('myzset', 0, 'test')
+    r.zadd('myzset', {'test': 0})
 
     assert r.keys('myi*') == ['myint']
 
