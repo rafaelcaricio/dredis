@@ -55,7 +55,7 @@ def test_python_objects_inside_lua():
     assert r.eval('''return redis.call('get', 'notfound')''', 0) is None
     assert r.eval('''
         local list = redis.call('zrange', 'notfound', 0, 1)
-        return {#KEYS, #ARGV, #list}''', 1, "foo", [1], "a", 1, 2.0) == [1, 4, 0]
+        return {#KEYS, #ARGV, #list}''', 1, "foo", "[1]", "a", 1, 2.0) == [1, 4, 0]
     # NOTE: The Redis protocol doesn't have booleans, so True is converted to `1` and `false` to `None`
     assert r.eval('''return 1 == 1''', 0) == 1
     assert r.eval('''return 1 == 2''', 0) is None
