@@ -46,6 +46,7 @@ class Path(str):
 
         encoder.write_header(old_size + 1)
         encoder.write_element_to_eof(line)
+        encoder.close()
 
     def readlines(self):
         with open(self, 'rb') as f:
@@ -105,6 +106,10 @@ class ZSetEncoder(object):
 
     def __init__(self, file_):
         self._file = file_
+
+    def close(self):
+        self._file.flush()
+        self._file.close()
 
     def write_header(self, size, seek_to_start=True):
         if seek_to_start:
