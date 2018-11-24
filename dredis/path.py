@@ -5,6 +5,7 @@ import shutil
 import struct
 
 import six
+import six.moves as sm
 import sys
 
 from scandir import scandir
@@ -133,7 +134,7 @@ class ZSetEncoder(object):
 
     def read_elements(self):
         count = self.read_header()
-        return [self.read_element() for _ in xrange(count)]
+        return [self.read_element() for _ in sm.range(count)]
 
     def skip_header(self):
         self._file.seek(self.HEADER_BYTES, os.SEEK_SET)
