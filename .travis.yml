@@ -1,6 +1,6 @@
 language: python
 python:
-  - "2.7"
+  - "3.7-dev"
 before_install: sudo apt-get update && sudo apt-get install redis-server
 install: make setup
 env:
