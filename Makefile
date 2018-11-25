@@ -29,8 +29,8 @@ unit: setup
 integration: setup
 	@pipenv run py.test -v tests/integration
 
-lint: setup
-	@flake8 .
+lint:
+	@pipenv run flake8 .
 
 server:
 	pipenv run python -m dredis.server $(TEST_OPTIONS)
@@ -44,7 +44,7 @@ stop-testserver:
 	@-rm $(PID)
 
 setup:
-	@pipenv install --dev
+	@pipenv sync --dev
 
 start-redistestserver:
 	-@redis-server $(PORT) 2>&1 & echo $$! > $(REDIS_PID)

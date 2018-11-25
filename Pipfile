@@ -8,6 +8,7 @@ pytest = "*"
 redis = "*"
 twine = "*"
 rope = "*"
+flake8 = "*"
 
 [packages]
 lupa = "*"
