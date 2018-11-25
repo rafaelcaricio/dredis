@@ -11,7 +11,7 @@ import sys
 from six import string_types
 
 from dredis import __version__
-from dredis.commands import run_command, simple_string, CommandNotFound
+from dredis.commands import run_command, CommandNotFound
 from dredis.keyspace import DiskKeyspace
 from dredis.lua import RedisScriptError
 from dredis.parser import Parser

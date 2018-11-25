@@ -3,7 +3,7 @@ import functools
 
 from lupa import LuaRuntime
 
-from dredis.commands import run_command, simple_string, CommandNotFound
+from dredis.commands import run_command, CommandNotFound
 from dredis.utils import to_str
 
 
@@ -57,7 +57,7 @@ class RedisLua(object):
             return False
         elif result is True:
             return 1
-        elif isinstance(result, (bytes, str)):
+        elif isinstance(result, str):
             table = self._lua_runtime.table()
             table["ok"] = result
             return table
