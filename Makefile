@@ -24,19 +24,19 @@ fulltests-real-redis:
 test: unit integration lint
 
 unit: setup
-	@py.test -v tests/unit
+	@pipenv run py.test -v tests/unit
 
 integration: setup
-	@py.test -v tests/integration
+	@pipenv run py.test -v tests/integration
 
 lint: setup
 	@flake8 .
 
 server:
-	python -m dredis.server $(TEST_OPTIONS)
+	pipenv run python -m dredis.server $(TEST_OPTIONS)
 
 start-testserver:
-	-python -m dredis.server $(TEST_OPTIONS) 2>&1 & echo $$! > $(PID)
+	-pipenv run python -m dredis.server $(TEST_OPTIONS) 2>&1 & echo $$! > $(PID)
 
 stop-testserver:
 	@-touch $(PID)
@@ -44,7 +44,7 @@ stop-testserver:
 	@-rm $(PID)
 
 setup:
-	@pip install -r development.txt --quiet
+	@pipenv install --dev
 
 start-redistestserver:
 	-@redis-server $(PORT) 2>&1 & echo $$! > $(REDIS_PID)
@@ -67,10 +67,10 @@ test-performance:
 	@py.test -vvvvv -s tests-performance
 
 performance-server:
-	python -m cProfile -o $(STATS_FILE) dredis/server.py $(PROFILE_OPTIONS)
+	pipenv run python -m cProfile -o $(STATS_FILE) dredis/server.py $(PROFILE_OPTIONS)
 
 performance-stats:
-	python -c 'import pstats ; pstats.Stats("$(STATS_FILE)").sort_stats("$(STATS_METRIC)").print_stats()' | less
+	pipenv run python -c 'import pstats ; pstats.Stats("$(STATS_FILE)").sort_stats("$(STATS_METRIC)").print_stats()' | less
 
 clean:
 	rm -rf build/ dist/
