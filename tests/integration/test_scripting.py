@@ -73,7 +73,7 @@ def test_should_convert_redis_reply_to_lua_types_inside_script():
     assert r.eval('''
         local result = redis.pcall("cmdnotfound")
         return string.find(result["err"], "Unknown Redis command called from Lua script")
-    ''', 0) > 0
+    ''', 0)
     assert r.eval('return #redis.call("zrange", "myzset", 0, 0) == 0', 0) == 1
 
 
