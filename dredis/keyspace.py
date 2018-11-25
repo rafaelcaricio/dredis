@@ -289,7 +289,7 @@ class DiskKeyspace(object):
             for score in scores:
                 score_path = scores_path.join(str(score))
                 lines = score_path.readlines()  # FIXME: move this to be inside the `if` block
-                if score == member_score:
+                if score == to_str(member_score):
                     for line in lines:
                         if line == member:
                             return rank
