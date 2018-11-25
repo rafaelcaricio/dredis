@@ -21,4 +21,4 @@ def test_lua_evaluation():
     for score in range(LARGE_NUMBER):
         assert r.eval("return 1".format(score), 0) == 1
     after_eval = time.time()
-    print '\nLua EVAL time = {:.5f}s'.format(after_eval - before_eval)
+    print('\nLua EVAL time = {:.5f}s'.format(after_eval - before_eval))
