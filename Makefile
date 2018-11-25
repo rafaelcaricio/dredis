@@ -64,7 +64,7 @@ release:
 	twine upload dist/*
 
 test-performance:
-	@py.test -vvvvv -s tests-performance
+	@pipenv run py.test -vvvvv -s tests-performance
 
 performance-server:
 	pipenv run python -m cProfile -o $(STATS_FILE) dredis/server.py $(PROFILE_OPTIONS)

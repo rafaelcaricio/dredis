@@ -38,7 +38,7 @@ def test_zadd_same_score_all_elements():
     r = fresh_redis(port=PROFILE_PORT)
     before_zadd = time.time()
     for score in range(LARGE_NUMBER):
-        assert r.zadd('myzset', 0, 'value{}'.format(score)) == 1
+        assert r.zadd('myzset', {'value{}'.format(score): 0}) == 1
     after_zadd = time.time()
     print('\nzset ZADD time = {:.5f}s'.format(after_zadd - before_zadd))
 
@@ -47,7 +47,7 @@ def test_zadd_rescore_same_element():
     r = fresh_redis(port=PROFILE_PORT)
     before_zadd = time.time()
     for score in range(LARGE_NUMBER):
-        r.zadd('myzset', score, 'value')
+        r.zadd('myzset', {'value': score})
     after_zadd = time.time()
     print('\nzset ZADD time = {:.5f}s'.format(after_zadd - before_zadd))
 
@@ -55,7 +55,7 @@ def test_zadd_rescore_same_element():
 def test_zcard():
     r = fresh_redis(port=PROFILE_PORT)
     for score in range(LARGE_NUMBER):
-        assert r.zadd('myzset', score, 'value{}'.format(score)) == 1
+        assert r.zadd('myzset', {'value{}'.format(score): score}) == 1
     before_zcard = time.time()
     assert r.zcard('myzset') == LARGE_NUMBER
     after_zcard = time.time()
@@ -65,7 +65,7 @@ def test_zcard():
 def test_zrank():
     r = fresh_redis(port=PROFILE_PORT)
     for score in range(LARGE_NUMBER):
-        assert r.zadd('myzset', 0, 'value{}'.format(score)) == 1
+        assert r.zadd('myzset', {'value{}'.format(score): 0}) == 1
     before_zrank = time.time()
     assert r.zrank('myzset', 'value{}'.format(LARGE_NUMBER - 1)) == LARGE_NUMBER - 1
     after_zrank = time.time()
@@ -76,7 +76,7 @@ def test_zrank():
 def test_zcount():
     r = fresh_redis(port=PROFILE_PORT)
     for score in range(LARGE_NUMBER):
-        assert r.zadd('myzset', 0, 'value{}'.format(score)) == 1
+        assert r.zadd('myzset', {'value{}'.format(score): 0}) == 1
     before_zcount = time.time()
     assert r.zcount('myzset', '-inf', '+inf') == LARGE_NUMBER
     after_zcount = time.time()
@@ -87,7 +87,7 @@ def test_zcount():
 def test_zrange():
     r = fresh_redis(port=PROFILE_PORT)
     for score in range(LARGE_NUMBER):
-        assert r.zadd('myzset', 0, 'value{}'.format(score)) == 1
+        assert r.zadd('myzset', {'value{}'.format(score): 0}) == 1
     before_zrange = time.time()
     assert len(r.zrange('myzset', 0, LARGE_NUMBER)) == LARGE_NUMBER
     after_zrange = time.time()
@@ -100,7 +100,7 @@ def test_zrem():
     elems = ['value{}'.format(i) for i in range(LARGE_NUMBER)]
 
     for elem in elems:
-        assert r.zadd('myzset', 0, elem) == 1
+        assert r.zadd('myzset', {elem: 0}) == 1
 
     before_zrem = time.time()
     for elem in elems:
