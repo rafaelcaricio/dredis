@@ -40,7 +40,7 @@ def command(cmd_name, arity):
 
 
 def simple_string(text):
-    return text.encode()
+    return text
 
 
 """

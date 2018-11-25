@@ -7,5 +7,5 @@ def to_float(s):
 
 def to_str(s):
     if isinstance(s, bytes):
-        return str(s, 'ISO-8859-1')
+        return s.decode()
     return str(s)

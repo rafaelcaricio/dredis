@@ -31,8 +31,8 @@ def test_set_and_get_bytes():
 def test_set_and_get_unicode_chars():
     r = fresh_redis()
 
-    assert r.set('foo㐀㐁', '㐂㐃') is True
-    assert r.get('foo㐀㐁') == '㐂㐃'
+    assert r.set(u'foo㐀㐁', u'㐂㐃') is True
+    assert r.get(u'foo㐀㐁') == u'㐂㐃'
 
 
 def test_set_and_get_integer():

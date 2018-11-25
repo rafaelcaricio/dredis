@@ -60,7 +60,7 @@ def transmit(send_fn, result):
             to_send.append(b':%d\r\n' % elem)
         elif isinstance(elem, str):
             to_send.append(b'+%s\r\n' % elem.encode())
-        elif isinstance(elem, bytes):
+        elif isinstance(elem, (string_types, bytes)):
             to_send.append(b'$%d\r\n%s\r\n' % (len(elem), elem))
         elif isinstance(elem, (set, list, tuple)):
             to_send.append(b'*%d\r\n' % len(elem))
@@ -81,7 +81,7 @@ class CommandHandler(asyncore.dispatcher):
             logger.debug('{} data = {}'.format(self.addr, repr(cmd)))
             execute_cmd(self.keyspace, self.debug_send, *cmd)
 
-    def debug_send(self, *args: bytes):
+    def debug_send(self, *args):
         logger.debug("out={}".format(repr(args)))
         return self.send(*args)
 
